@@ -1,16 +1,6 @@
 provider "aws" {
-  region = "us-west-2"
+  region = "us-east-1"
 }
-
-#DEFINE VARIABLES-------------------------------------------------------------
-
-variable "availability_zone" {
-  description = "availability_zone to create subnet"
-  default     = "us-west-2a"
-}
-
-
-
 
 #CREATE A NEW VPC--------------------------------------------------------------
 
