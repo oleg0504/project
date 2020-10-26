@@ -51,7 +51,7 @@ resource "aws_route_table" "public_rt" {
 
 resource "aws_route_table_association" "rta_public_subnet" {
   subnet_id      = aws_subnet.public_subnet.id
-  route_table_id = aws_route_table.public.rt.id
+  route_table_id = aws_route_table.public_rt.id
 }
 
 
@@ -87,5 +87,14 @@ resource "aws_security_group" "public_sg" {
 
 resource "aws_key_pair" "ec2key" {
   key_name   = "ec2key"
-  public_key = file("/home/che/.ssh/id_rsa.pub")
+  public_key = file("/home/che/.ssh/aws-key.pub")
+}
+
+resource "aws_instance" "testInstance" {
+  ami                    = var.instance_ami
+  instance_type          = var.instance_type
+  subnet_id              = aws_subnet.public_subnet.id
+  vpc_security_group_ids = [aws_security_group.public_sg.id]
+  key_name               = aws_key_pair.ec2key.key_name
+
 }
