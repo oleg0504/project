@@ -5,8 +5,10 @@ provider "aws" {
 #CREATE A NEW VPC--------------------------------------------------------------
 
 resource "aws_vpc" "myvpc" {
-  cidr_block       = "10.0.0.0/22"
-  instance_tenancy = "default"
+  cidr_block           = var.cidr_vpc
+  instance_tenancy     = "default"
+  enable_dns_support   = true
+  enable_dns_hostnames = true
   tags = {
     Name = "myvpc"
   }
@@ -14,7 +16,7 @@ resource "aws_vpc" "myvpc" {
 
 #DEFINE INTERNET GETEWAY-------------------------------------------------------
 
-resource "aws_internet_gateway" "myvpc_IGW" {
+resource "aws_internet_gateway" "my_IGW" {
   vpc_id = aws_vpc.myvpc.id
   tags = {
     Name = "myvpc_IGW"
@@ -26,11 +28,11 @@ resource "aws_internet_gateway" "myvpc_IGW" {
 
 resource "aws_subnet" "public_subnet" {
   vpc_id                  = aws_vpc.myvpc.id
-  cidr_block              = "10.0.1.0/24"
+  cidr_block              = var.cidr_subnet_jenkins
   map_public_ip_on_launch = "true"
   availability_zone       = var.availability_zone
   tags = {
-    Name = "my_public_subnet"
+    Name = "jenkins_public_subnet"
   }
 }
 
@@ -40,10 +42,18 @@ resource "aws_route_table" "public_rt" {
   vpc_id = aws_vpc.myvpc.id
 
   route {
-    gateway_id = aws_internet_gateway.myvpc_IGW.id
+    gateway_id = aws_internet_gateway.my_IGW.id
     cidr_block = "0.0.0.0/0"
   }
 }
+
+#ROUTE TABLE ASSOCIATION--------------------------------------------------------
+
+resource "aws_route_table_association" "rta_public_subnet" {
+  subnet_id      = aws_subnet.public_subnet.id
+  route_table_id = aws_route_table.public.rt.id
+}
+
 
 #ADD SECURITY GROUP FOR PUBLIC SUBNET------------------------------------------
 resource "aws_security_group" "public_sg" {
