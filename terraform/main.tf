@@ -70,6 +70,14 @@ resource "aws_security_group" "public_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    description = "allow_http"
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -85,16 +93,57 @@ resource "aws_security_group" "public_sg" {
 
 #CREATE KEY PAIR---------------------------------------------------------------
 
-resource "aws_key_pair" "ec2key" {
-  key_name   = "ec2key"
-  public_key = file("/home/che/.ssh/aws-key.pub")
+resource "aws_key_pair" "mykey" {
+  key_name   = "mykey"
+  public_key = "${file(var.public_key)}"
 }
 
-resource "aws_instance" "testInstance" {
+resource "aws_instance" "jenkinsmaster" {
   ami                    = var.instance_ami
   instance_type          = var.instance_type
   subnet_id              = aws_subnet.public_subnet.id
   vpc_security_group_ids = [aws_security_group.public_sg.id]
-  key_name               = aws_key_pair.ec2key.key_name
+  key_name               = aws_key_pair.mykey.key_name
+
+  tags = {
+    Name = "Jenkins-master"
+  }
+
+
+  provisioner "local-exec" {
+    command = <<EOT
+      sleep 30;
+      >jenkinsmaster.ini;
+      echo "[jenkinsmaster]" | tee -a jenkinsmaster.ini;
+      echo "${aws_instance.jenkinsmaster.public_ip} ansible_user=${var.ansible_user} ansible_ssh_private_key_file=${var.private_key}" | tee -a jenkinsmaster.ini;
+      export ANSIBLE_HOST_KEY_CHECKING=False;
+      ansible-playbook -u ${var.ansible_user} --private-key ${var.private_key} -i jenkinsmaster.ini /home/che/Documents/project/ansible/install_java.yaml /home/che/Documents/project/ansible/install_jenkins.yaml
+    EOT
+  }
+
+}
+
+
+resource "aws_instance" "jenkinsslave" {
+  ami                    = var.instance_ami
+  instance_type          = var.instance_type
+  subnet_id              = aws_subnet.public_subnet.id
+  vpc_security_group_ids = [aws_security_group.public_sg.id]
+  key_name               = aws_key_pair.mykey.key_name
+
+  tags = {
+    Name = "Jenkins-slave"
+  }
+
+  provisioner "local-exec" {
+    command = <<EOT
+      sleep 30;
+      >jenkinsslave.ini;
+      echo "[jenkinsslave]" | tee -a jenkinsslave.ini;
+      echo "${aws_instance.jenkinsslave.public_ip} ansible_user=${var.ansible_user} ansible_ssh_private_key_file=${var.private_key}" | tee -a jenkinsslave.ini;
+      export ANSIBLE_HOST_KEY_CHECKING=False;
+      ansible-playbook -u ${var.ansible_user} --private-key ${var.private_key} -i jenkinsslave.ini /home/che/Documents/project/ansible/install_java.yaml /home/che/Documents/project/ansible/install_docker.yaml /home/che/Documents/project/ansible/install_git.yaml
+      EOT
+  }
 
 }

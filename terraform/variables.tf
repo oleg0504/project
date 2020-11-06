@@ -19,3 +19,37 @@ variable "instance_type" {
 variable "instance_ami" {
   description = "AMI for aws EC2 instance"
 }
+
+variable "public_key" {
+
+}
+
+variable "private_key" {
+
+}
+
+
+
+variable "ansible_user" {
+
+}
+
+
+#--------------------------------------------------------------------------------
+variable "test_vpc" {
+  description = "CIDR block for the VPC"
+}
+
+
+variable "test_subnet" {
+  description = "CIDR block for jenkins"
+}
+
+
+variable "test_key_pub" {
+
+}
+
+variable "test_key_priv" {
+
+}
