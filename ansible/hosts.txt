@@ -1,7 +1,7 @@
 [jenkins-servers]
 jenkinsmaster ansible_host=54.161.62.108
-jenkinsslave ansible_host=52.91.45.78
+jenkinsslave ansible_host=54.172.150.220
 
 
 [dockerhosts]
-dockerhost ansible_host=54.172.117.205
+dockerhost ansible_host=54.166.216.188

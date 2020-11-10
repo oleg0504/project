@@ -11,5 +11,5 @@ ansible_user        = "ubuntu"
 
 test_vpc      = "10.0.16.0/20"
 test_subnet   = "10.0.16.0/24"
-test_key_pub  = "/home/che/.ssh/aws-key.pub"
-test_key_priv = "/home/che/.ssh/aws-key"
+test_key_pub  = "/home/che/.ssh/docker-key.pub"
+test_key_priv = "/home/che/.ssh/docker-key"
